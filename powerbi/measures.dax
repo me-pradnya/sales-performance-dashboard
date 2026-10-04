@@ -1,0 +1,20 @@
+-- Create as measures; format revenue/profit/AOV as currency and rates as percentage.
+Total Revenue = SUM(FactSales[sales])
+Total Profit = SUM(FactSales[profit])
+Total Orders = DISTINCTCOUNT(FactSales[order_id])
+Total Quantity = SUM(FactSales[quantity])
+Average Order Value = DIVIDE([Total Revenue], [Total Orders])
+Profit Margin % = DIVIDE([Total Profit], [Total Revenue])
+Customer Count = DISTINCTCOUNT(FactSales[customer_key])
+Average Discount % = AVERAGE(FactSales[discount_pct])
+Revenue PY = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR('Date'[Date]))
+Revenue YoY Growth % = DIVIDE([Total Revenue] - [Revenue PY], [Revenue PY])
+Profit PY = CALCULATE([Total Profit], SAMEPERIODLASTYEAR('Date'[Date]))
+Profit YoY Growth % = DIVIDE([Total Profit] - [Profit PY], [Profit PY])
+Current Year Revenue = CALCULATE([Total Revenue], DATESYTD('Date'[Date]))
+Current Year Profit = CALCULATE([Total Profit], DATESYTD('Date'[Date]))
+Revenue by Region = [Total Revenue] -- use Region dimension on visual axis
+Profit by Region = [Total Profit] -- use Region dimension on visual axis
+Revenue by Category = [Total Revenue] -- use Product category on visual axis
+Profit by Category = [Total Profit] -- use Product category on visual axis
+Top Product Revenue = MAXX(TOPN(1, ALL(Product[product_name]), [Total Revenue], DESC), [Total Revenue])
