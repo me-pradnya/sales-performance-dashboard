@@ -19,7 +19,7 @@ Raw CSV → staging table → quality audit and curated view → customer/produc
 Scripts create the database/staging table, audit and clean rows, build a star schema, and query core KPIs, month/quarter/year trends, YoY growth, regional/category/product performance, customer repeat behavior, and discount bands. Cleaning excludes malformed/impossible required values and deduplicates the order/product grain; raw source is retained. Details are documented in `documentation/project_documentation.md`.
 
 ## Power BI dashboard
-The proposed one-page executive dashboard contains six KPI cards, monthly revenue/profit trend, regional revenue/profit, category performance, top/bottom product tables, and slicers for year, region, category, subcategory, and product. Exact field mapping and build steps are in `powerbi/dashboard_specification.md`. This package does not include a `.pbix`: Power BI Desktop was not available in this environment.
+The proposed one-page executive dashboard contains six KPI cards, monthly revenue/profit trend, regional revenue/profit, category performance, top/bottom product tables, and slicers for year, region, category, subcategory, and product. Exact field mapping and build steps are in `powerbi/dashboard_specification.md`. **The `.pbix` has not been created yet.** Build and validate it in Power BI Desktop using the specification and DAX file; this repository currently contains the data model instructions and measures, not a finished interactive dashboard.
 
 ## KPIs
 Total Revenue, Total Profit, Profit Margin %, Total Orders, Total Quantity, Average Order Value, Revenue YoY Growth %, Profit YoY Growth %, Customer Count, and Average Discount %. DAX definitions are in `powerbi/measures.dax`.
@@ -45,10 +45,11 @@ README.md
 ```
 
 ## Setup and run
-1. Install PostgreSQL 15+ and create/load a database using scripts in numeric order. From the project root, use `psql -U <user> -f outputs/sql/01_create_database.sql`; load CSV into staging using the documented `\copy` command with `outputs/data/raw/ecommerce_sales.csv` (relative to repository root), then run `02_data_cleaning.sql`, `03_data_transformation.sql`, `04_analysis_queries.sql`, and `05_kpi_queries.sql` in the `sales_performance` database.
-2. In Power BI Desktop, connect to PostgreSQL database `sales_performance`, schema `analytics`. Import `fact_sales`, `dim_date`, `dim_product`, `dim_customer`, `dim_region`; follow model instructions and create measures from `powerbi/measures.dax`.
-3. Build visuals using `powerbi/dashboard_specification.md`, save as `powerbi/Sales_Performance_Dashboard.pbix`, then refresh to update.
-4. Reconcile cards with the KPI query and confirm date slicer interactions.
+1. Install PostgreSQL 15+. From the repository root, create the database and staging table: `psql -U postgres -d postgres -f sql/01_create_database.sql`.
+2. Load the raw CSV into staging. Start `psql -U postgres -d sales_performance`, then run `\copy analytics.stg_sales_raw FROM 'data/raw/ecommerce_sales.csv' WITH (FORMAT csv, HEADER true);` and exit with `\q`.
+3. From the repository root, run the remaining scripts in order: `psql -U postgres -d sales_performance -f sql/02_data_cleaning.sql`, then the same command with `03_data_transformation.sql`, `04_analysis_queries.sql`, and `05_kpi_queries.sql`.
+4. In Power BI Desktop, connect to PostgreSQL database `sales_performance`, schema `analytics`. Import `fact_sales`, `dim_date`, `dim_product`, `dim_customer`, and `dim_region`; follow `powerbi/dashboard_specification.md` for relationships and rename tables/date field as described so measures in `powerbi/measures.dax` resolve.
+5. Build the visuals, save as `powerbi/Sales_Performance_Dashboard.pbix`, and verify KPI totals against the SQL output and slicer/date behavior.
 
 For CSV-only exploration, Power BI can import the raw file, but the star-schema workflow is reproduced through PostgreSQL.
 
